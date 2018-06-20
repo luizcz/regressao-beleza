@@ -1,9 +1,9 @@
 ---
-title: "Regressão linear na prática"
+title: "Regressão linear sobre professores"
 output: html_notebook
 ---
 
-```{r warning=FALSE, echo=FALSE}
+```{r warning=FALSE, echo=FALSE, message=FALSE}
 library(tidyverse)
 library(broom)
 library(modelr)
@@ -27,7 +27,7 @@ A CAPES é um órgão do MEC que tem a atribuição de acompanhar a pós-gradua�
 
 Usaremos dados da penúltima avaliação da CAPES: 
 
-```{r}
+```{r warning=FALSE, echo=FALSE}
 cacc = read_projectdata()
 
 glimpse(cacc)
