@@ -7,12 +7,13 @@ output: html_notebook
 library(tidyverse)
 library(broom)
 library(modelr)
-source(here::here("code/lib.R"))
+library(GGally)
 theme_set(theme_report())
 
 knitr::opts_chunk$set(tidy = FALSE,
                       fig.width = 6,
                       fig.height = 5)
+dados <- read_csv(here::here("data/evals.csv"))
 
 paleta = c("#404E4D",
            "#92DCE5",
@@ -28,9 +29,8 @@ A CAPES é um órgão do MEC que tem a atribuição de acompanhar a pós-gradua�
 Usaremos dados da penúltima avaliação da CAPES: 
 
 ```{r warning=FALSE, echo=FALSE}
-cacc = read_projectdata()
 
-glimpse(cacc)
+glimpse(dados)
 ```
 
 ### Produção e produtividade de artigos
@@ -38,30 +38,31 @@ glimpse(cacc)
 Uma das maneiras de avaliar a produção dos docentes que a CAPES utiliza é quantificando a produção de artigos pelos docentes. Os artigos são categorizados em extratos ordenados (A1 é o mais alto), e separados entre artigos em conferências e periódicos. Usaremos para esse lab a produção em periódicos avaliados com A1, A2 e B1. 
 
 ```{r}
-cacc = cacc %>% 
-  mutate(producao = (periodicos_A1 + periodicos_A2 + periodicos_B1), 
-         produtividade = producao / `Docentes permanentes`, 
-         mestrados = Dissertacoes, 
-         doutorados = Teses,
-         mestrados_pprof = mestrados / `Docentes permanentes`, 
-         doutorados_pprof = doutorados / `Docentes permanentes`)
+dados%>%
+    select(-cls_perc_eval, -cls_did_eval, -cls_profs, -cls_credits, -cls_students, -bty_f1lower, -bty_f2upper, -bty_f1upper,-bty_m1lower, -bty_m2upper, -bty_m1upper  )%>%
+    ggpairs()
+dados %>%
+    ggplot(aes(x =bty_avg , y = score))+
+    geom_point()
+modelo1 = lm(score ~ bty_avg, data = dados)
+tidy(modelo1, conf.int = TRUE, conf.level = 0.95)
+glance(modelo1)
+
 ```
 
 
 ### EDA
 
 ```{r}
-cacc %>% 
-  ggplot(aes(x = `Docentes permanentes`)) + 
+dados %>% 
+  ggplot(aes(x = score)) + 
   geom_histogram(bins = 15, fill = paleta[1])
 
-cacc %>% 
-  ggplot(aes(x = producao)) + 
+dados %>% 
+  ggplot(aes(x = bty_avg)) + 
   geom_histogram(bins = 15, fill = paleta[2])
 
-cacc %>% 
-  ggplot(aes(x = produtividade)) + 
-  geom_histogram(bins = 15, fill = paleta[3])
+
 ```
 
 Se quisermos modelar o efeito do tamanho do programa em termos de docentes (permanentes) na quantidade de artigos publicados, podemos usar regressão. 
